@@ -6,6 +6,7 @@ import com.example.LabOneBusinessLogic.controller.util.AuthResponse;
 import com.example.LabOneBusinessLogic.controller.util.RegistrationRequest;
 import com.example.LabOneBusinessLogic.entity.Users;
 import com.example.LabOneBusinessLogic.service.UserService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;

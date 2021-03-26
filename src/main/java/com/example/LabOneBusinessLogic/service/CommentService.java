@@ -48,7 +48,24 @@ public class CommentService
     }
 
     public boolean update(Comments post, int id) {
-        if (commentsRepository.existsById((long) id)) {
+        if (commentsRepository.existsById((long) id))
+        {
+            Comments currentcomment=commentsRepository.findById((long) id).get();
+            if (post.getOwner()==null)
+                post.setOwner(currentcomment.getOwner());
+            if (post.getPost()==null)
+                post.setPost(currentcomment.getPost());
+            if (post.getChildComment()==null)
+                post.setChildComment(currentcomment.getChildComment());
+            if (post.getTitle()==null)
+                post.setTitle(currentcomment.getTitle());
+            if (post.getDateCreate()==null)
+                post.setDateCreate(currentcomment.getDateCreate());
+            if (post.getContent()==null)
+                post.setContent(currentcomment.getContent());
+            if (post.getParentComment()==null)
+                post.setParentComment(currentcomment.getParentComment());
+
             post.setId((long)id);
             commentsRepository.save(post);
             return true;

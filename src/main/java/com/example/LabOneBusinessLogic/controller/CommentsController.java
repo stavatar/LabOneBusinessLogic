@@ -79,9 +79,9 @@ public class CommentsController
         {
             deleted =commentService.delete(commentService.get(id));
                 return deleted
-                        ? new ResponseEntity<>("Данные успешно изменены",HttpStatus.OK)
-                        : new ResponseEntity<>("Не получилось обновить данные.Возможно,такого обьекта не существует",HttpStatus.NOT_MODIFIED);
-        } else   return   new ResponseEntity<>("Не хватает прав",HttpStatus.FORBIDDEN);
+                        ? new ResponseEntity<>(HttpStatus.OK)
+                        : new ResponseEntity<>(HttpStatus.NOT_MODIFIED);
+        } else   return   new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
     }
     @PutMapping(value = "/user/comment/update/{id}/")
@@ -93,8 +93,8 @@ public class CommentsController
         {
             deleted = commentService.update(posts, id);
             return deleted
-                    ? new ResponseEntity<>("Данные успешно изменены",HttpStatus.OK)
-                    : new ResponseEntity<>("Не получилось обновить данные.Возможно,такого обьекта не существует",HttpStatus.NOT_MODIFIED);
-        } else   return   new ResponseEntity<>("Не хватает прав",HttpStatus.FORBIDDEN);
+                    ? new ResponseEntity<>(HttpStatus.OK)
+                    : new ResponseEntity<>(HttpStatus.NOT_MODIFIED);
+        } else   return   new ResponseEntity<>(HttpStatus.FORBIDDEN);
     }
 }

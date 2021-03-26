@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -76,7 +77,20 @@ public class UserService
     {
         if (usersRepository.existsById((long) id))
         {
+            Users currentUser=usersRepository.findById(id).get();
             user.setId(id);
+            if (user.getListComment()==null)
+                user.setListComment(currentUser.getListComment());
+            if (user.getListPost()==null)
+                user.setListPost(currentUser.getListPost());
+            if (user.getPassword()==null)
+                user.setPassword(currentUser.getPassword());
+            if (user.getLogin()==null)
+                user.setLogin(currentUser.getLogin());
+            if (user.getListlike()==null)
+                user.setListlike(currentUser.getListlike());
+            if (user.getPosition()==null)
+                user.setPosition(currentUser.getPosition());
             usersRepository.save(user);
             return true;
         }

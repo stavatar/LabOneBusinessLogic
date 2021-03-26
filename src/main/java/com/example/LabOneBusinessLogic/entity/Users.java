@@ -55,7 +55,7 @@ public class Users implements Serializable {
     @Fetch(value = FetchMode.SUBSELECT)
     private List<Posts> listPost;
 
-    @OneToMany(cascade=CascadeType.REFRESH,orphanRemoval=true,mappedBy = "owner" )
+    @OneToMany(cascade=CascadeType.REFRESH,mappedBy = "owner" )
     @JsonIgnoreProperties("childComment")
     @Fetch(value = FetchMode.SUBSELECT)
     private List<Comments> listComment;

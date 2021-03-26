@@ -44,17 +44,21 @@ public class PostService
          post.setCountLike(likeordislike ? (post.getCountLike() + 1) : (post.getCountLike() - 1));
          user.getListlike().put(post, likeordislike);
 
-         userService.save(user);
-         postsRepository.save(post);
+
      }
 
      public void remove_rate(Posts post,Users user,boolean likeordislike)
      {
           post.setCountLike(likeordislike?(post.getCountLike() - 1):(post.getCountLike()+1));
           user.getListlike().remove(post);
-         userService.save(user);
-         postsRepository.save(post);
+
      }
+    public void remove_lastrate(Posts post,Users user,boolean likeordislike)
+    {
+        post.setCountLike(likeordislike?(post.getCountLike() + 1):(post.getCountLike()-1));
+        user.getListlike().remove(post);
+
+    }
      public ResponseEntity<?> add_like(int id_post, String login, boolean likeordislike)
      {
          Users user=userService.findByLogin(login);
@@ -67,17 +71,25 @@ public class PostService
          {
              make_rate( post, user, likeordislike);
              answer.append(" поставлен");
+             userService.save(user);
+             postsRepository.save(post);
          }
          else
              {
                  if(user.getListlike().get(post)==likeordislike)
-                     remove_rate( post, user, likeordislike);
+                 {
+                     remove_rate(post, user, likeordislike);
+                     answer.append(" убран");
+                 }
                  else
                  {
-                     remove_rate( post, user, likeordislike);
+                     remove_lastrate( post, user, likeordislike);
                      make_rate(post, user, likeordislike);
+                     answer.append(" поставлен");
                  };
-                 answer.append(" убран");
+                 userService.save(user);
+                 postsRepository.save(post);
+
              }
            return new ResponseEntity<>(answer.toString(), HttpStatus.OK)  ;
 
@@ -92,7 +104,20 @@ public class PostService
         if (postsRepository.existsById((long) id))
         {
             Posts post_old=postsRepository.findById((long)id).get();
-            post_old.setListComments((!post_old.getListComments().isEmpty())?post_old.getListComments():post_old.getListComments());
+            if (post.getOwner()==null)
+                post.setOwner(post_old.getOwner());
+            if (post.getListComments()==null)
+                post.setListComments(post_old.getListComments());
+            if (post.getCountLike()==null)
+                post.setCountLike(post_old.getCountLike());
+            if (post.getTitle()==null)
+                post.setTitle(post_old.getTitle());
+            if (post.getDateCreate()==null)
+                post.setDateCreate(post_old.getDateCreate());
+            if (post.getContent()==null)
+                post.setContent(post_old.getContent());
+            if (post.getListusersliked()==null)
+                post.setListusersliked(post_old.getListusersliked());
             post.setId((long)id);
             postsRepository.save(post);
             return true;

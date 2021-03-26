@@ -47,9 +47,9 @@ public class UserController
                 customUserDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN")))
         {
             return userService.delete(delete_user_id)
-                    ? new ResponseEntity<>("Данные успешно изменены",HttpStatus.OK)
-                    : new ResponseEntity<>("Не получилось обновить данные.Возможно,такого обьекта не существует",HttpStatus.NOT_MODIFIED);
-        } else   return   new ResponseEntity<>("Не хватает прав",HttpStatus.FORBIDDEN);
+                    ? new ResponseEntity<>(HttpStatus.OK)
+                    : new ResponseEntity<>(HttpStatus.NOT_MODIFIED);
+        } else   return   new ResponseEntity<>(HttpStatus.FORBIDDEN);
     }
 
 
@@ -60,9 +60,9 @@ public class UserController
                 customUserDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN")))
         {
             return userService.update(new_user,update_user_id)
-                    ? new ResponseEntity<>("Данные успешно изменены",HttpStatus.OK)
-                    : new ResponseEntity<>("Не получилось обновить данные.Возможно,такого обьекта не существует",HttpStatus.NOT_MODIFIED);
-        } else   return   new ResponseEntity<>("Не хватает прав",HttpStatus.FORBIDDEN);
+                    ? new ResponseEntity<>(HttpStatus.OK)
+                    : new ResponseEntity<>(HttpStatus.NOT_MODIFIED);
+        } else   return   new ResponseEntity<>(HttpStatus.FORBIDDEN);
     }
 
 }
