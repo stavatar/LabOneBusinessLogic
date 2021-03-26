@@ -79,23 +79,14 @@ public class CommentService
         {
             Users user = comment.getOwner();
             Posts post= comment.getPost();
-           // user.getListComment().remove(comment);
 
-
-          /*  post.getListComments().remove(comment);
-            postService.save(post);*/
-
-          //  userService.saveUser(user);
-           // postService.save(post);
-            for (Comments comment1:comment.getChildComment())
-                delete(comment1);
+          /*  for (Comments comment1:comment.getChildComment())
+                delete(comment1);*/
 
             comment.setOwner(null);
             comment.setPost(null);
             comment.setParentComment(null);
-            commentsRepository.save(comment);
-           /* Users user1=userService.findByLogin(login);
-            Posts posts1=postsRepository.findById(id_post).get();*/
+
             commentsRepository.delete(comment);
 
 
