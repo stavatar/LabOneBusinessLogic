@@ -1,24 +1,22 @@
 package com.example.LabOneBusinessLogic.controller;
 
-
-import com.example.LabOneBusinessLogic.Security.Manager.ActionType;
-import com.example.LabOneBusinessLogic.Security.Manager.SecurityRolesManager;
+import com.example.LabOneBusinessLogic.config.CustomUserDetails;
 import com.example.LabOneBusinessLogic.entity.Posts;
+import com.example.LabOneBusinessLogic.entity.Users;
 import com.example.LabOneBusinessLogic.service.PostService;
 import com.example.LabOneBusinessLogic.service.UserService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.ServletException;
 import java.util.List;
-@Tag(name = "PostController", description = "Содержит методы для работы с постами")
-
 @RestController
 @Log
 public class PostController
@@ -29,8 +27,6 @@ public class PostController
     private UserService userService;
 
     @GetMapping(value = "/user/posts/")
-    @Operation(summary = "Получение всех постов")
-
     public ResponseEntity<List<Posts>> read()
     {
         final List<Posts> posts = postService.getAll();
@@ -41,19 +37,12 @@ public class PostController
     }
 
     @PostMapping(value = "/user/create_post/",consumes = {MediaType.APPLICATION_JSON_VALUE})
-    @Operation(summary = "Создание поста")
-
-    public ResponseEntity<?> create(@RequestBody Posts posts) throws ServletException {
-
-        if (SecurityRolesManager.checkPermission(ActionType.WRITE_POSTS))
-        {
-            postService.create(posts, SecurityRolesManager.getNameCurrentUser());
-            return new ResponseEntity<>(HttpStatus.CREATED);
-        }else return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+    public ResponseEntity<?> create(@RequestBody Posts posts,@AuthenticationPrincipal CustomUserDetails customUserDetails)
+    {
+        postService.create(posts, customUserDetails.getUsername());
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
     @GetMapping(value = "/user/post{id}/read/")
-    @Operation(summary = "Получение конкретного поста")
-
     public ResponseEntity<Posts> read(@PathVariable(name = "id") int id) {
         final Posts client = postService.get(id);
 
@@ -62,30 +51,23 @@ public class PostController
                 : new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
     @GetMapping(value = "/user/post{id}/like/")
-    @Operation(summary = "Поставить лайк к посту")
-    public  ResponseEntity<?> like(@PathVariable(name = "id") int post_id)
+    public  ResponseEntity<?> like(@PathVariable(name = "id") int post_id,@AuthenticationPrincipal CustomUserDetails customUserDetails)
     {
-       return postService.add_like(post_id,SecurityRolesManager.getNameCurrentUser(),true);
+       return postService.add_like(post_id,customUserDetails.getUsername(),true);
     }
     @GetMapping(value = "/user/post{id}/dislike/")
-    @Operation(summary = "Поставить дизлайк к посту")
-    public  ResponseEntity<?> dislike(@PathVariable(name = "id") int post_id)
+    public  ResponseEntity<?> dislike(@PathVariable(name = "id") int post_id,@AuthenticationPrincipal CustomUserDetails customUserDetails)
     {
-        return postService.add_like(post_id,SecurityRolesManager.getNameCurrentUser(),false);
+        return postService.add_like(post_id,customUserDetails.getUsername(),false);
 
     }
     @DeleteMapping(value = "/user/post{id}/delete/")
-    @Operation(summary = "Удалить пост")
-    public  ResponseEntity<?>  delete(@PathVariable(name = "id") int id)
+    public  ResponseEntity<?>  delete(@PathVariable(name = "id") int id,@AuthenticationPrincipal CustomUserDetails customUserDetails)
     {
 
         boolean deleted;
-        boolean checkPermission;
-         if (userService.containPost(SecurityRolesManager.getNameCurrentUser(),id))
-              checkPermission = SecurityRolesManager.checkPermission(ActionType.DELETE_YOUR_POST);
-         else checkPermission =  SecurityRolesManager.checkPermission(ActionType.DELETE_ALIEN_POST);
-
-        if(checkPermission)
+        if ((userService.containPost(customUserDetails.getUsername(),id))||
+                customUserDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN")))
         {
                 deleted = postService.delete(postService.get(id));
             return deleted
@@ -94,15 +76,11 @@ public class PostController
         } else   return   new ResponseEntity<>(HttpStatus.FORBIDDEN);
     }
     @PutMapping(value = "/user/post{id}/update/")
-    @Operation(summary = "Изменить пост")
-    public  ResponseEntity<?>  update(@RequestBody Posts new_posts,@PathVariable(name = "id") int id)
+    public  ResponseEntity<?>  update(@RequestBody Posts new_posts,@PathVariable(name = "id") int id,@AuthenticationPrincipal CustomUserDetails customUserDetails)
     {
         boolean deleted;
-        boolean checkPermission;
-        if (userService.containPost(SecurityRolesManager.getNameCurrentUser(),id))
-            checkPermission = SecurityRolesManager.checkPermission(ActionType.UPDATE_YOUR_POST);
-        else checkPermission =  SecurityRolesManager.checkPermission(ActionType.UPDATE_ALIEN_POST);
-        if (checkPermission)
+        if ((userService.containPost(customUserDetails.getUsername(),id))||
+                customUserDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN")))
         {
             deleted =  postService.update(new_posts, id);
 

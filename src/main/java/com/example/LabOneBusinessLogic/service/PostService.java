@@ -1,5 +1,6 @@
 package com.example.LabOneBusinessLogic.service;
 
+import com.example.LabOneBusinessLogic.entity.Comments;
 import com.example.LabOneBusinessLogic.entity.Posts;
 import com.example.LabOneBusinessLogic.entity.Users;
 import com.example.LabOneBusinessLogic.repository.PostsRepository;
@@ -8,9 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallback;
-import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.List;
 
@@ -24,8 +22,6 @@ public class PostService
     private CommentService commentService;
     @Autowired
     private UserService userService;
-    @Autowired
-    private TransactionTemplate transactionTemplate;
 
     public List<Posts> getAll()
 {
@@ -33,20 +29,13 @@ public class PostService
 }
     public void create(Posts post,String nameUser)
     {
-          transactionTemplate.execute((TransactionCallback<Void>) status -> {
-              Users user = userService.findByLogin(nameUser);
-              post.setOwner(user);
-              postsRepository.save(post);
-              return null;
-          });
+         Users user=userService.findByLogin(nameUser);
+         post.setOwner(user);
+        postsRepository.save(post);
     }
     public void save(Posts post)
     {
-        transactionTemplate.execute(status ->
-        {
-            postsRepository.save(post);
-            return null;
-        });;
+        postsRepository.save(post);
     }
 
 
@@ -72,35 +61,37 @@ public class PostService
     }
      public ResponseEntity<?> add_like(int id_post, String login, boolean likeordislike)
      {
-         return (ResponseEntity<?>) transactionTemplate.execute(new TransactionCallback() {
-             public Object doInTransaction(TransactionStatus status) {
-                 Users user = userService.findByLogin(login);
-                 Posts post = postsRepository.findById((long) id_post).get();
-                 StringBuilder answer = new StringBuilder();
-                 if (likeordislike) answer.append("Лайк ");
-                 else answer.append("Дизлайк ");
+         Users user=userService.findByLogin(login);
+         Posts post=postsRepository.findById((long)id_post).get();
+            StringBuilder answer=new StringBuilder();
+         if (likeordislike)answer.append("Лайк ");
+           else answer.append("Дизлайк ");
 
-                 if (!user.getListlike().containsKey(post)) {
+         if (!user.getListlike().containsKey(post))
+         {
+             make_rate( post, user, likeordislike);
+             answer.append(" поставлен");
+             userService.save(user);
+             postsRepository.save(post);
+         }
+         else
+             {
+                 if(user.getListlike().get(post)==likeordislike)
+                 {
+                     remove_rate(post, user, likeordislike);
+                     answer.append(" убран");
+                 }
+                 else
+                 {
+                     remove_lastrate( post, user, likeordislike);
                      make_rate(post, user, likeordislike);
                      answer.append(" поставлен");
-                     userService.save(user);
-                     postsRepository.save(post);
-                 } else {
-                     if (user.getListlike().get(post) == likeordislike) {
-                         remove_rate(post, user, likeordislike);
-                         answer.append(" убран");
-                     } else {
-                         remove_lastrate(post, user, likeordislike);
-                         make_rate(post, user, likeordislike);
-                         answer.append(" поставлен");
-                     }
-                     ;
-                     userService.save(user);
-                     postsRepository.save(post);
+                 };
+                 userService.save(user);
+                 postsRepository.save(post);
 
-                 }
-                 return new ResponseEntity<>(HttpStatus.OK);
-             }});
+             }
+           return new ResponseEntity<>(HttpStatus.OK)  ;
 
      }
 
@@ -110,43 +101,49 @@ public class PostService
 
     public boolean update(Posts post, int id)
     {
-        return (boolean) transactionTemplate.execute(new TransactionCallback() {
-            public Object doInTransaction(TransactionStatus status) {
-                if (postsRepository.existsById((long) id)) {
-                    Posts post_old = postsRepository.findById((long) id).get();
-                    if (post.getOwner() == null)
-                        post.setOwner(post_old.getOwner());
-                    if (post.getListComments() == null)
-                        post.setListComments(post_old.getListComments());
-                    if (post.getCountLike() == null)
-                        post.setCountLike(post_old.getCountLike());
-                    if (post.getTitle() == null)
-                        post.setTitle(post_old.getTitle());
-                    if (post.getDateCreate() == null)
-                        post.setDateCreate(post_old.getDateCreate());
-                    if (post.getContent() == null)
-                        post.setContent(post_old.getContent());
-                    if (post.getListusersliked() == null)
-                        post.setListusersliked(post_old.getListusersliked());
-                    post.setId((long) id);
-                    postsRepository.save(post);
-                    return true;
-                }
+        if (postsRepository.existsById((long) id))
+        {
+            Posts post_old=postsRepository.findById((long)id).get();
+            if (post.getOwner()==null)
+                post.setOwner(post_old.getOwner());
+            if (post.getListComments()==null)
+                post.setListComments(post_old.getListComments());
+            if (post.getCountLike()==null)
+                post.setCountLike(post_old.getCountLike());
+            if (post.getTitle()==null)
+                post.setTitle(post_old.getTitle());
+            if (post.getDateCreate()==null)
+                post.setDateCreate(post_old.getDateCreate());
+            if (post.getContent()==null)
+                post.setContent(post_old.getContent());
+            if (post.getListusersliked()==null)
+                post.setListusersliked(post_old.getListusersliked());
+            post.setId((long)id);
+            postsRepository.save(post);
+            return true;
+        }
 
-                return false;
-            }});
+        return false;
     }
     public boolean delete(Posts post)
     {
-        return (boolean) transactionTemplate.execute(new TransactionCallback() {
-            public Object doInTransaction(TransactionStatus status) {
-                if (postsRepository.existsById(post.getId())) {
-                    post.setOwner(null);
-                    postsRepository.delete(post);
-                    return true;
-                }
-                return false;
-            }});
+        if (postsRepository.existsById(post.getId()))
+        {
+
+           /* for (Comments comment1:post.getListComments())
+            {
+                commentService.delete(comment1);
+            }*/
+
+
+            //postsRepository.save(post);
+            post.setOwner(null);
+           // post.setListComments(null);
+            postsRepository.delete(post);
+
+            return true;
+        }
+        return false;
     }
     public  Posts get(int id)
     {

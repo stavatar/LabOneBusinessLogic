@@ -18,8 +18,10 @@ import java.util.*;
 
 @Entity
 @Table(name = "users")
-
-
+@Setter
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Users implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -57,80 +59,6 @@ public class Users implements Serializable {
     @JsonIgnoreProperties("childComment")
     @Fetch(value = FetchMode.SUBSELECT)
     private List<Comments> listComment;
-
-    public Users(Long id, String login, String password, Position position, Map<Posts, Boolean> listlike, List<Posts> listPost, List<Comments> listComment) {
-        this.id = id;
-        this.login = login;
-        this.password = password;
-        this.position = position;
-        this.listlike = listlike;
-        this.listPost = listPost;
-        this.listComment = listComment;
-    }
-
-    public Users()
-    {
-    }
-
-    public static long getSerialVersionUID() {
-        return serialVersionUID;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getLogin() {
-        return login;
-    }
-
-    public void setLogin(String login) {
-        this.login = login;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public Position getPosition() {
-        return position;
-    }
-
-    public void setPosition(Position position) {
-        this.position = position;
-    }
-
-    public Map<Posts, Boolean> getListlike() {
-        return listlike;
-    }
-
-    public void setListlike(Map<Posts, Boolean> listlike) {
-        this.listlike = listlike;
-    }
-
-    public List<Posts> getListPost() {
-        return listPost;
-    }
-
-    public void setListPost(List<Posts> listPost) {
-        this.listPost = listPost;
-    }
-
-    public List<Comments> getListComment() {
-        return listComment;
-    }
-
-    public void setListComment(List<Comments> listComment) {
-        this.listComment = listComment;
-    }
 
 
     @Override
