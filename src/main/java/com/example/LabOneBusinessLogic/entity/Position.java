@@ -2,6 +2,7 @@ package com.example.LabOneBusinessLogic.entity;
 
 
 
+import com.example.LabOneBusinessLogic.Security.Manager.RoleType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -28,7 +29,8 @@ public class Position implements Serializable {
 
 
     @Column(name = "name")
-    private String name;
+    @Enumerated(EnumType.STRING)
+    private RoleType name;
 
     @Column(name = "description")
     private String description;

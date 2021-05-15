@@ -1,0 +1,13 @@
+{
+  "properties": [
+    {
+      "name": "hibernate.transaction.jta.platform",
+      "type": "java.lang.String",
+      "description": "Description for hibernate.transaction.jta.platform."
+    },
+    {
+      "name": "hibernate.transaction.jta.platform",
+      "type": "java.lang.String",
+      "description": "Description for hibernate.transaction.jta.platform."
+    }
+  ] }

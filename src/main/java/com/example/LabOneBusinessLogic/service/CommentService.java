@@ -6,6 +6,10 @@ import com.example.LabOneBusinessLogic.entity.Users;
 import com.example.LabOneBusinessLogic.repository.CommentsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -19,6 +23,8 @@ public class CommentService
     private PostService postService;
     @Autowired
     private UserService userService;
+    @Autowired
+    private TransactionTemplate transactionTemplate;
      public void save(Comments comment)
      {
          commentsRepository.save(comment);
@@ -29,72 +35,75 @@ public class CommentService
     }
     public void create(Comments new_comment,Long  parent_id, String login, int post_id)
     {
-        Users user=userService.findByLogin(login);
-        Posts post= postService.get(post_id);
+        transactionTemplate.execute(status ->
+                    {
+                        Users user=userService.findByLogin(login);
+                        Posts post= postService.get(post_id);
 
-        post.getListComments().add(new_comment);
+                        post.getListComments().add(new_comment);
 
-        user.getListComment().add(new_comment);
+                        user.getListComment().add(new_comment);
 
-        new_comment.setOwner(user);
-        new_comment.setPost(post);
-        if((parent_id!=null)&&(commentsRepository.existsById(parent_id)))
-        {
-            Comments parentComment=commentsRepository.findById(parent_id).get();
-            new_comment.setParentComment(parentComment);
-        }
+                        new_comment.setOwner(user);
+                        new_comment.setPost(post);
+                        if((parent_id!=null)&&(commentsRepository.existsById(parent_id)))
+                        {
+                            Comments parentComment=commentsRepository.findById(parent_id).get();
+                            new_comment.setParentComment(parentComment);
+                        }
 
-        commentsRepository.save(new_comment);
+                        commentsRepository.save(new_comment);
+
+                        return null;
+                    });
+
     }
 
-    public boolean update(Comments post, int id) {
-        if (commentsRepository.existsById((long) id))
-        {
-            Comments currentcomment=commentsRepository.findById((long) id).get();
-            if (post.getOwner()==null)
-                post.setOwner(currentcomment.getOwner());
-            if (post.getPost()==null)
-                post.setPost(currentcomment.getPost());
-            if (post.getChildComment()==null)
-                post.setChildComment(currentcomment.getChildComment());
-            if (post.getTitle()==null)
-                post.setTitle(currentcomment.getTitle());
-            if (post.getDateCreate()==null)
-                post.setDateCreate(currentcomment.getDateCreate());
-            if (post.getContent()==null)
-                post.setContent(currentcomment.getContent());
-            if (post.getParentComment()==null)
-                post.setParentComment(currentcomment.getParentComment());
+    public boolean update(Comments post, int id)
+    {
+       return (boolean) transactionTemplate.execute(new TransactionCallback() {
+           public Object doInTransaction(TransactionStatus status) {
+               if (commentsRepository.existsById((long) id)) {
+                   Comments currentcomment = commentsRepository.findById((long) id).get();
+                   if (post.getOwner() == null)
+                       post.setOwner(currentcomment.getOwner());
+                   if (post.getPost() == null)
+                       post.setPost(currentcomment.getPost());
+                   if (post.getChildComment() == null)
+                       post.setChildComment(currentcomment.getChildComment());
+                   if (post.getTitle() == null)
+                       post.setTitle(currentcomment.getTitle());
+                   if (post.getDateCreate() == null)
+                       post.setDateCreate(currentcomment.getDateCreate());
+                   if (post.getContent() == null)
+                       post.setContent(currentcomment.getContent());
+                   if (post.getParentComment() == null)
+                       post.setParentComment(currentcomment.getParentComment());
 
-            post.setId((long)id);
-            commentsRepository.save(post);
-            return true;
-        }
+                   post.setId((long) id);
+                   commentsRepository.save(post);
+                   return Boolean.TRUE;
+               } else return Boolean.FALSE;
+           }
+       });
 
-        return false;
+
+
     }
     public boolean delete(Comments comment)
     {
-        if (commentsRepository.existsById(comment.getId()))
-        {
-            Users user = comment.getOwner();
-            Posts post= comment.getPost();
-
-          /*  for (Comments comment1:comment.getChildComment())
-                delete(comment1);*/
-
-            comment.setOwner(null);
-            comment.setPost(null);
-            comment.setParentComment(null);
-
-            commentsRepository.delete(comment);
-
-
-
-
-            return true;
-        }
-        return false;
+        return (boolean) transactionTemplate.execute(new TransactionCallback() {
+            public Object doInTransaction(TransactionStatus status) {
+                if (commentsRepository.existsById(comment.getId())) {
+                    comment.setOwner(null);
+                    comment.setPost(null);
+                    comment.setParentComment(null);
+                    commentsRepository.delete(comment);
+                    return true;
+                }
+                return false;
+            }
+        });
     }
     public  Comments get(int id)
     {

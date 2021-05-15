@@ -1,4 +1,4 @@
-package com.example.LabOneBusinessLogic.config.jwt;
+package com.example.LabOneBusinessLogic.Security.jwt;
 
 import io.jsonwebtoken.*;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,6 +14,14 @@ public class JwtProvider
 {
     @Value("javamaster")
     private String jwtSecret;
+
+    public String getJwtSecret() {
+        return jwtSecret;
+    }
+
+    public void setJwtSecret(String jwtSecret) {
+        this.jwtSecret = jwtSecret;
+    }
 
     public String generateToken(String login)
     {
@@ -43,8 +51,18 @@ public class JwtProvider
         }
         return false;
     }
-    public String getLoginFromToken(String token) {
-        Claims claims = Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody();
-        return claims.getSubject();
+    public String getLoginFromToken(String token)
+    {
+        try
+        {
+            Claims claims = Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody();
+            return claims.getSubject();
+        }catch (IllegalArgumentException e)
+        {
+            return  "invalid token";
+        }
+
     }
+
+
 }
