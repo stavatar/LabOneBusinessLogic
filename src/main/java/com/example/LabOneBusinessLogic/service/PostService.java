@@ -91,7 +91,7 @@ public class PostService
                  postsRepository.save(post);
 
              }
-           return new ResponseEntity<>(HttpStatus.OK)  ;
+           return new ResponseEntity<>(answer.toString(), HttpStatus.OK)  ;
 
      }
 
@@ -130,15 +130,13 @@ public class PostService
         if (postsRepository.existsById(post.getId()))
         {
 
-           /* for (Comments comment1:post.getListComments())
-            {
+            for (Comments comment1:post.getListComments())
                 commentService.delete(comment1);
-            }*/
 
 
-            //postsRepository.save(post);
+            postsRepository.save(post);
             post.setOwner(null);
-           // post.setListComments(null);
+            post.setListComments(null);
             postsRepository.delete(post);
 
             return true;
